@@ -1,0 +1,112 @@
+---
+- hosts: all
+  name: boot strap for basic setup of a system
+
+
+  vars:
+    installs: 1
+    ansible_user: root
+    # ansible_become_user: root
+    # ansible_become_method: sudo
+    # ansible_become: true  
+
+  tasks:
+    - name: Allow 'wheel' group to have passwordless wheel
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '^%wheel'
+        line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+
+    - hostname: 
+        name: "{{inventory_hostname}}"
+        #name: infra02
+        #name: master
+        
+      when: installs == 1
+
+    - name: Set IP address
+      lineinfile:
+        dest: /etc/sysconfig/network-scripts/ifcfg-ens192
+        state: present
+        regexp: ^IPADDR
+        line: IPADDR="10.0.2.22"
+      when: installs == 10
+
+    - name: Install epel-repo rpm
+      yum:
+        pkg=https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+        state=installed
+      when: installs == 10
+
+    - name: Update System
+      yum:
+        name: '*'
+        state: latest
+      when: installs == 10
+ 
+    - name: Add PI User
+      user: >
+        name=pi
+        password=$6$LMD1fpwMQKkFCQ3n$CC55TcLwFvwNjjEvSixi4tHwjie6aP5bm9Cu5bLtx9zll4a70MBaufQiOmlJQ1oYXAee5GuS7RLte6FqZCh7q1
+        shell=/bin/bash
+        groups=wheel
+        uid=2001
+        append=yes
+        state=present
+      ignore_errors: True
+
+    - name: Add ssh keys to Pi
+      authorized_key: 
+        user: "pi"
+        key: "{{ lookup('file', '/home/darleya/.ssh/id_rsa.pub') }}" 
+        state: present
+      ignore_errors: True
+
+    - name: Add Darleya User
+      user: >
+        name=darleya
+        password=$6$LMD1fpwMQKkFCQ3n$CC55TcLwFvwNjjEvSixi4tHwjie6aP5bm9Cu5bLtx9zll4a70MBaufQiOmlJQ1oYXAee5GuS7RLte6FqZCh7q1
+        shell=/bin/bash
+        uid=2126
+        groups=wheel
+        append=yes
+        state=present
+      ignore_errors: True
+
+    - name: Add ssh keys to Darleya
+      authorized_key: 
+        user: "darleya"
+        key: "{{ lookup('file', '/home/darleya/.ssh/id_rsa.pub') }}" 
+        state: present
+      ignore_errors: True
+
+    - name: update profile
+      lineinfile:
+        dest: /home/darleya/.bash_profile
+        regexp: ".profile"
+        line: ". .profile"
+        state: present
+      ignore_errors: True
+
+    - name: Add ssh keys to root
+      authorized_key: 
+        user: "root"
+        key: "{{ lookup('file', '/home/darleya/.ssh/id_rsa.pub') }}" 
+        state: present
+      ignore_errors: True
+
+    - name: all hosts
+      blockinfile:
+        dest: /etc/hosts
+        state: present
+        block: |
+          10.0.2.0        ls2       
+          10.0.2.10       master   master.rcity.net
+          10.0.2.21       infra01  infra01.rcity.net
+          10.0.2.22       infra02  infra02.rcity.net
+          10.0.2.31       app01    app01.rcity.net
+          10.0.2.32       app02    app02.rcity.net
+
+      when: installs == 1

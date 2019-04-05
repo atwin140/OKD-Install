@@ -1,0 +1,71 @@
+---
+# Prepare systems for install
+
+- hosts: nodes
+  gather_facts: no
+  
+  tasks:
+
+  - name: Install docker
+    yum:
+      name: docker
+      state: latest
+  
+  - name: Remove old Docker-storage-setup
+    file:                                                                                                     
+      path: /etc/sysconfig/docker-storage-setup
+      state: absent
+
+  - name: Remove old Docker-storage
+    file:
+      path: /etc/sysconfig/docker-storage
+      state: absent
+
+  - name: Create new Docker-storage-setup
+    file:
+      path: /etc/sysconfig/docker-storage-setup
+      state: touch
+
+  - name: docker-storage-setup (add DEV=vdb)
+    lineinfile:
+      path: /etc/sysconfig/docker-storage-setup
+      regexp: DEVS
+      line: DEVS=/dev/sdb
+    tags:
+      - storage-setup
+
+  - name: docker-storage-setup (add VG=dockervg)
+    lineinfile:
+      path: /etc/sysconfig/docker-storage-setup
+      regexp: VG=
+      line: VG=dockervg
+    tags:
+      - storage-setup
+
+  - name: docker storage-setup (add WIPE_SIGNATURES=true)
+    lineinfile:
+      path: /etc/sysconfig/docker-storage-setup
+      regexp: WIPE_SIGNATURES
+      line: WIPE_SIGNATURES=true
+    tags:
+      - storage-setup
+
+  - name: Make sure docker is stopped
+    systemd:
+      name: docker
+      state: stopped
+
+  #- name: Remove /var/lib/docker
+    #file:
+      #path: /var/lib/docker
+      #state: absent
+
+  - name: Run docker-storage-setup
+    command: "docker-storage-setup"
+
+  - name: Start and enable docker
+    systemd:
+      name: docker
+      state: started
+      enabled: yes
+
