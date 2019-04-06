@@ -43,7 +43,7 @@
       - docker.io/openshift/origin-pod:v3.11.0
     when: openshift_node_group_name == 'node-config-infra'
 
- - name: Prepull images for Master/Infra Combo Nodes
+  - name: Prepull images for Master/Infra Combo Nodes
     docker_image:
       name: "{{item}}"
       state: present
@@ -68,6 +68,8 @@
       - docker.io/openshift/origin-haproxy-router:v3.11.0
       - docker.io/openshift/origin-haproxy-router:v3.11
     when: openshift_node_group_name == 'node-config-master-infra
+    ignore_errors: true
+
   - name: Prepull images for App Nodes
     docker_image:
       name: "{{item}}"
