@@ -23,6 +23,7 @@
       - docker.io/openshift/origin-pod:v3.11.0
       - quay.io/coreos/etcd:v3.2.22
     when: openshift_node_group_name == 'node-config-master'
+    ignore_errors: true 
 
   - name: Prepull images for Infra Nodes
     docker_image:
@@ -42,6 +43,18 @@
       - docker.io/openshift/origin-pod:v3.11
       - docker.io/openshift/origin-pod:v3.11.0
     when: openshift_node_group_name == 'node-config-infra'
+    ignore_errors: true 
+
+  - name: Prepull images for App Nodes
+    docker_image:
+      name: "{{item}}"
+      state: present
+    with_items:
+      - docker.io/openshift/origin-node:v3.11
+      - docker.io/openshift/origin-pod:v3.11
+      - docker.io/openshift/origin-pod:v3.11.0
+    when: openshift_node_group_name == 'node-config-compute'
+    ignore_errors: true 
 
   - name: Prepull images for Master/Infra Combo Nodes
     docker_image:
@@ -68,15 +81,5 @@
       - docker.io/openshift/origin-haproxy-router:v3.11.0
       - docker.io/openshift/origin-haproxy-router:v3.11
     when: openshift_node_group_name == 'node-config-master-infra
-    ignore_errors: true
 
-  - name: Prepull images for App Nodes
-    docker_image:
-      name: "{{item}}"
-      state: present
-    with_items:
-      - docker.io/openshift/origin-node:v3.11
-      - docker.io/openshift/origin-pod:v3.11
-      - docker.io/openshift/origin-pod:v3.11.0
-    when: openshift_node_group_name == 'node-config-compute'
 

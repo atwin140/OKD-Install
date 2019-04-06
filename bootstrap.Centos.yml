@@ -102,6 +102,7 @@
         dest: /etc/hosts
         state: present
         block: |
+<<<<<<< HEAD
           #---------------OKD ENV ---------------------------------
           10.0.2.0        spirit    okd-00    spirit.darleyahome.com
           10.0.2.10       master    okd-01    master.darleyhome.com  console   console.darleyhome.com
@@ -111,4 +112,13 @@
           10.0.2.31       app01     okd-05    app01.darleyhome.com
           10.0.2.32       app02     okd-06    app02.darleyhome.com
           10.0.2.33       app03     okd-07    app03.darleyhome.com
+=======
+          10.0.2.0        ls2       
+          10.0.2.10       master   master.darleyhome.com
+          10.0.2.21       infra01  infra01.darleyhome.com
+          10.0.2.22       infra02  infra02.darleyhome.com
+          10.0.2.31       app01    app01.darleyhome.com
+          10.0.2.32       app02    app02.darleyhome.com
+
+>>>>>>> With better Readme
       when: installs == 1
