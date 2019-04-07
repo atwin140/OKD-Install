@@ -1,0 +1,19 @@
+---
+# Prepare systems for install
+
+- hosts: nodes
+  gather_facts: no
+  
+  tasks:
+
+  - name: Add ssh keys
+    authorized_key: 
+      user: "root"
+      key: "{{ lookup('file', '/root/.ssh/id_rsa.pub') }}" 
+      state: present
+
+  - name: Add id_rsa.pub copy
+    copy:
+      dest: /root/.ssh/id_rsa
+      src: /root/.ssh/id_rsa
+      mode: 0400
